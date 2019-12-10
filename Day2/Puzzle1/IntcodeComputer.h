@@ -42,6 +42,31 @@ public:
     void SaveIntcodeOutput(const String &FILENAME) const;
 
     /**
+     *  @brief  Get current size of the memory.
+     */
+    size_t GetMemorySize() const;
+
+    /**
+     *  @brief  Write to memory.
+     * 
+     *  @param  address the address to write to.
+     *  @param  value the value to write.
+     * 
+     *  @return boolean to indicate whether the write was successful.
+     */
+    bool Write(const int address, const int value);
+
+    /**
+     *  @brief  Read from memory.
+     * 
+     *  @param  address the address to read form.
+     *  @param  value the value read.
+     * 
+     *  @return boolean to indicate whether the read was successful.
+     */
+    bool Read(const int address, int &value) const;
+
+    /**
      *  @brief  Run on the computer's memory.
      */
     void Run();
@@ -66,26 +91,7 @@ private:
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-inline void IntcodeComputer::Add(int &instructionPointer)
+inline size_t IntcodeComputer::GetMemorySize() const
 {
-    const int input1 = memory[instructionPointer+1];
-    const int input2 = memory[instructionPointer+2];
-    const int output = memory[instructionPointer+3];
-
-    memory[output] = memory[input1] + memory[input2];
-
-    instructionPointer += 4;
-}
-
-// ---------------------------------------------------------------------------------------------------------------------------------
-
-inline void IntcodeComputer::Multiply(int &instructionPointer)
-{
-    const int input1 = memory[instructionPointer+1];
-    const int input2 = memory[instructionPointer+2];
-    const int output = memory[instructionPointer+3];
-
-    memory[output] = memory[input1] * memory[input2];
-
-    instructionPointer += 4;
+    return memory.size();
 }

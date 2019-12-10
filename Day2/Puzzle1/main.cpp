@@ -12,6 +12,8 @@ int main(int argc, char **argv)
     const String FILENAME = (1 == argc ? "input" : argv[1]);
 
     IntcodeComputer intcodeComputer(FILENAME);
+    intcodeComputer.Write(1,12);
+    intcodeComputer.Write(2,2);
     intcodeComputer.Run();
 
     return EXIT_SUCCESS;
