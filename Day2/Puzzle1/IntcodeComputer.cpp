@@ -8,7 +8,8 @@
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-IntcodeComputer::IntcodeComputer(const String &FILENAME)
+IntcodeComputer::IntcodeComputer(const String &FILENAME) :
+    isLogging(false)
 {
     ReadIntcodeProgram(FILENAME);
 }
@@ -17,6 +18,18 @@ IntcodeComputer::IntcodeComputer(const String &FILENAME)
 
 IntcodeComputer::~IntcodeComputer()
 {
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+void IntcodeComputer::SaveIntcodeOutput(const String &FILENAME) const
+{
+    std::ofstream OUTPUT(FILENAME);
+
+    for (int number : memory)
+    {
+        OUTPUT << number << ',';
+    }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -35,49 +48,6 @@ void IntcodeComputer::ReadIntcodeProgram(const String &FILENAME)
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
-void IntcodeComputer::SaveIntcodeOutput(const String &FILENAME) const
-{
-    std::ofstream OUTPUT(FILENAME);
-
-    for (int number : memory)
-    {
-        OUTPUT << number << ',';
-    }
-}
-
-// ---------------------------------------------------------------------------------------------------------------------------------
-
-bool IntcodeComputer::Write(const int address, const int value)
-{
-    if ((address <= memory.size()) && (address >= 0))
-    {
-        memory[address] = value;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-    
-}
-
-// ---------------------------------------------------------------------------------------------------------------------------------
-
-bool IntcodeComputer::Read(const int address, int &value) const
-{
-    if ((address <= memory.size()) && (address >= 0))
-    {
-        value = memory[address];
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-// ---------------------------------------------------------------------------------------------------------------------------------
-
 void IntcodeComputer::Run()
 {
     const size_t end = memory.size();
@@ -85,51 +55,120 @@ void IntcodeComputer::Run()
 
     while (end > instructionPointer)
     {
-        const int opcode = memory[instructionPointer];
+        const int opcode = GetOpcode(instructionPointer);
 
         switch (opcode)
         {
-            case 1:
+            case ADD:
                 Add(instructionPointer);
                 break;
-            case 2:
+            case MULTIPLY:
                 Multiply(instructionPointer);
                 break;
-            case 99:
-                instructionPointer = end;
-                std::cout << "Found opcode 99 to terminate. Stopping program.\n";
-                SaveIntcodeOutput("output");
+            case INPUT:
+            {
+                const int input(0); // TODO: Work out best way to get input.
+                Input(instructionPointer, input);
                 break;
-            default:
+            }
+            case OUTPUT:
+                Output(instructionPointer);
+                break;
+            case TERMINATE:
                 instructionPointer = end;
-                std::cout << "Invalid opcode found at position: " << opcode << '\n';
-                SaveIntcodeOutput("errorOutput");
+                if (isLogging)
+                    std::cout << "Found opcode 99 to terminate. Stopping program and saving output.\n";
+                SaveIntcodeOutput("output");
         }
     }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
+int IntcodeComputer::GetOpcode(const int instructionPointer) const
+{
+	IsAddressValid(instructionPointer);
+	
+	const int value(memory[instructionPointer]);
+	const String stringValue(std::to_string(value));
+	const std::size_t digits(stringValue.size());
+	const int opcode = (digits >= 2 ? std::stoi(stringValue.substr(digits - 2)) : value);
+
+	switch (opcode)
+	{
+		case ADD:
+		case MULTIPLY:
+		case INPUT:
+		case OUTPUT:
+		case TERMINATE:
+			break;
+		default:
+			throw std::invalid_argument(String(std::to_string(opcode)) + " is not a valid opcode!\n");
+	}
+
+	return opcode;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+
 void IntcodeComputer::Add(int &instructionPointer)
 {
-    const int input1 = memory[instructionPointer+1];
-    const int input2 = memory[instructionPointer+2];
-    const int output = memory[instructionPointer+3];
+	IsAddressValid(instructionPointer);
+	IsAddressValid(instructionPointer + 1);
+	IsAddressValid(instructionPointer + 2);
+	IsAddressValid(instructionPointer + 3);
 
-    memory[output] = memory[input1] + memory[input2];
+	const int input1 = memory[instructionPointer + 1];
+	const int input2 = memory[instructionPointer + 2];
+	const int output = memory[instructionPointer + 3];
 
-    instructionPointer += 4;
+	memory[output] = memory[input1] + memory[input2];
+
+	instructionPointer += 4;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 
 void IntcodeComputer::Multiply(int &instructionPointer)
 {
-    const int input1 = memory[instructionPointer+1];
-    const int input2 = memory[instructionPointer+2];
-    const int output = memory[instructionPointer+3];
+	IsAddressValid(instructionPointer);
+	IsAddressValid(instructionPointer + 1);
+	IsAddressValid(instructionPointer + 2);
+	IsAddressValid(instructionPointer + 3);
 
-    memory[output] = memory[input1] * memory[input2];
+	const int input1 = memory[instructionPointer + 1];
+	const int input2 = memory[instructionPointer + 2];
+	const int output = memory[instructionPointer + 3];
 
-    instructionPointer += 4;
+	memory[output] = memory[input1] * memory[input2];
+
+	instructionPointer += 4;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+void IntcodeComputer::Input(int &instructionPointer, const int input)
+{
+	IsAddressValid(instructionPointer);
+	IsAddressValid(instructionPointer + 1);
+
+	const int output = memory[instructionPointer + 1];
+
+	memory[output] = input;
+
+	instructionPointer += 2;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+int IntcodeComputer::Output(int &instructionPointer) const
+{
+	IsAddressValid(instructionPointer);
+	IsAddressValid(instructionPointer + 1);
+
+	const int output = memory[instructionPointer + 1];
+
+	return memory[output];
+
+	instructionPointer += 2;
 }

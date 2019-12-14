@@ -6,8 +6,6 @@
 
 int main(int argc, char **argv)
 {
-    typedef std::string String;
-
     if (1 == argc)
         std::cout << "No filename was provided, using file \"input\"\n";
 
@@ -18,7 +16,7 @@ int main(int argc, char **argv)
     String mass;
     while (std::getline(INPUT,mass))
     {
-        totalFuel += ((std::stoi(mass) / 3) - 2);
+        totalFuel += (std::stoi(mass) / 3) - 2;
     }
     std::cout << "The total fuel required is: " << totalFuel << '\n';
 

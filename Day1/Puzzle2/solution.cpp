@@ -4,9 +4,9 @@
 
 #include "solution.h"
 
-int AdditionalFuel(int fuelAsMass)
+int AdditionalFuel(const int fuelAsMass)
 {
-    int additionalFuel = (fuelAsMass / 3) - 2;
+    const int additionalFuel = (fuelAsMass / 3) - 2;
     if (additionalFuel <= 0)
         return 0;
     else
@@ -15,8 +15,6 @@ int AdditionalFuel(int fuelAsMass)
 
 int main(int argc, char **argv)
 {
-    typedef std::string String;
-
     if (1 == argc)
         std::cout << "No filename was provided, using file \"input\"\n";
 

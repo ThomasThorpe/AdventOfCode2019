@@ -9,4 +9,6 @@
 #include <iostream>
 #include <fstream>
 
-#endif
+using String = std::string;
+
+#endif // (!defined SOLUTION_H)
